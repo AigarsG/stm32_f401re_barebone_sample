@@ -1,20 +1,19 @@
-Native build
+# Building
+## Native build
 make
 
-Native debug build
+## Native debug build
 make DEBUG=1
 
-Target build
+## Target build
 make ARCH=arm CROSS_COMPILE=arm-none-eabi-
 
-Target debug build
+## Target debug build
 make DEBUG=1 ARCH=arm CROSS_COMPILE=arm-none-eabi-
 
-
-Programming device
+# Programming device
 ./get-stlink.sh (run only once)
 ./flash.sh
 
-
-Debugging with gdb
+# Debugging with gdb
 ./debug.sh

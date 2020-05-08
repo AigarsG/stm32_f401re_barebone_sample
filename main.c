@@ -1,6 +1,8 @@
+#include <string.h>
+
 #define FLASH_BASE	0x08000000
 #define SRAM_BASE	0x20000000
-#define PERIPH_BASE	0x40000000 
+#define PERIPH_BASE	0x40000000
 
 #define SRAM_SIZE	96*1024
 #define SRAM_END	(PERIPH_BASE + SRAM_SIZE)
@@ -27,6 +29,8 @@
 #define NVIC_ISER1	((unsigned *)(NVIC_BASE + 0x100 + 0x4))
 #define NVIC_ICPR1	((unsigned *)(NVIC_BASE + 0x280 + 0x4))
 
+#define USART1_BASE	(PERIPH_BASE + 0x11000)
+
 
 typedef struct {
 	volatile unsigned moder;
@@ -37,8 +41,7 @@ typedef struct {
 	volatile unsigned odr;
 	volatile unsigned bsrr;
 	volatile unsigned lckr;
-	volatile unsigned afrl;
-	volatile unsigned afrh;
+	volatile unsigned afr[2];
 } gpiox_regs_t;
 
 
@@ -48,10 +51,22 @@ typedef struct {
 } reg_pin_pair_t;
 
 
+typedef struct {
+	volatile unsigned sr;
+	volatile unsigned dr;
+	volatile unsigned brr;
+	volatile unsigned cr1;
+	volatile unsigned cr2;
+	volatile unsigned cr3;
+	volatile unsigned gtpr;
+} usartx_regs_t;
+
+
 static gpiox_regs_t *GPIOA_Reg_Ptr = (gpiox_regs_t *)(GPIOA_BASE);
 static gpiox_regs_t *GPIOB_Reg_Ptr = (gpiox_regs_t *)(GPIOB_BASE);
 static gpiox_regs_t *GPIOC_Reg_Ptr = (gpiox_regs_t *)(GPIOC_BASE);
 static gpiox_regs_t *GPIOD_Reg_Ptr = (gpiox_regs_t *)(GPIOD_BASE);
+static usartx_regs_t *USART1_Reg_Prt = (usartx_regs_t *)(USART1_BASE);
 
 
 static reg_pin_pair_t output_pins[] = {
@@ -110,7 +125,7 @@ static void init_gpios(void)
 {
 	/* Enable clock for GPIOA */
 	do {
-		*RCC_AHB1ENR = 0x1;
+		*RCC_AHB1ENR |= 0x1;
 	} while (!(*RCC_AHB1ENR & 0x1));
 	/* Enable clock for GPIOB */
 	do {
@@ -129,12 +144,67 @@ static void init_gpios(void)
 	GPIOC_Reg_Ptr->moder &= ~(1 << 26 | 1 << 27);
 	GPIOC_Reg_Ptr->pupdr &= ~(1 << 26 | 1 << 27);
 
-	/* Configure PA5 (LD2) as output */
-	GPIOA_Reg_Ptr->moder &= ~((1 << 10));
-	GPIOA_Reg_Ptr->moder &= ~((1 << 11));
-	GPIOA_Reg_Ptr->moder |= ((1 << 10));
-
 	init_output_pins();
+}
+
+
+static void init_usart(void)
+{
+	/* Enable clock for GPIOA */
+	do {
+		*RCC_AHB1ENR |= 0x1;
+	} while (!(*RCC_AHB1ENR & 0x1));
+
+	/* PA9 is USART1_TX, configure as AF, select AF07 pull-up */
+	GPIOA_Reg_Ptr->moder &= ~((1 << 18) | (1 << 19));
+	GPIOA_Reg_Ptr->moder |= (1 << 19);
+	GPIOA_Reg_Ptr->pupdr &= ~((1 << 18) | (1 << 19));
+	GPIOA_Reg_Ptr->pupdr |= (1 << 18);
+	GPIOA_Reg_Ptr->afr[1] |= ((1 << 4) | (1 << 5) | (1 << 6));
+
+	/* PA3 is USART2_RX, configure as AF, select AF07 as input
+	GPIOA_Reg_Ptr->moder &= ~((1 << 6) | (1 << 7));
+	GPIOA_Reg_Ptr->moder |= (1 << 7);
+	GPIOA_Reg_Ptr->pupdr &= ~((1 << 6) | (1 << 7));
+	GPIOA_Reg_Ptr->afr[0] |= ((1 << 12) | (1 << 13) | (1 << 14));*/
+
+	/* Enable clock for USART1 */
+	do {
+		*(RCC_APB2ENR) |= (1 << 4);
+	} while (!(*(RCC_APB2ENR) & (1 << 4)));
+	/* Enable USART1 */
+	USART1_Reg_Prt->cr1 |= (1 << 13);
+	/* Define word length to 9 bits */
+	USART1_Reg_Prt->cr1 |= (1 << 12);
+	/* Set number of stop bits to 1 */
+	USART1_Reg_Prt->cr2 &= ~((1 << 13) | (1 << 12));
+	/* Set DMA bit to disabled */
+	USART1_Reg_Prt->cr3 &= ~(1 << 7);
+	/* Set baud rate to 115200b/s */
+	USART1_Reg_Prt->brr = 0x2d9;
+}
+
+
+static void write_usart_char(char c)
+{
+	/* Wait for TXE flag indicated TDR buffer is clear */
+	while (!(USART1_Reg_Prt->sr & (1 << 7)));
+	USART1_Reg_Prt->dr = c & 0xff;
+}
+
+
+static void write_usart(char *buf, unsigned bufsz)
+{
+	unsigned i;
+	/* Enable transmission which sends idle frame as first transmission */
+	USART1_Reg_Prt->cr1 |= (1 << 3);
+	/* Write data */
+	for (i = 0; i < bufsz; i++)
+		write_usart_char(buf[i]);
+	/* Wait for transfer complete bit */
+	while (!(USART1_Reg_Prt->sr & (1 << 6)));
+	/* Disable transmission */
+	USART1_Reg_Prt->cr1 &= ~(1 << 3);
 }
 
 
@@ -198,6 +268,7 @@ int main(void)
 
 	init_irq();
 	init_gpios();
+	init_usart();
 
 	while (1) {
 		run_led_row(reverse, nleds, d);
@@ -205,4 +276,3 @@ int main(void)
 
 	return 0;
 }
-

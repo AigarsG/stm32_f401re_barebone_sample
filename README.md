@@ -4,6 +4,13 @@
 <li>./docker-run.sh to run and log into container based on built image</li>
 </ol>
 
+## Building
+### Native build
+make
+
+### Native debug build
+make DEBUG=1
+
 ### Target build
 make ARCH=arm CROSS_COMPILE=arm-none-eabi-
 

@@ -7,11 +7,25 @@
 
 #define RCC_BASE	(PERIPH_BASE + 0x23800)
 #define RCC_AHB1ENR	((unsigned *)(RCC_BASE + 0x30))
+#define RCC_APB2ENR	((unsigned *)(RCC_BASE + 0x44))
+
+#define SYSCFG_BASE	(PERIPH_BASE + 0x13800)
+#define SYSCFG_EXTICR4	((unsigned *)(SYSCFG_BASE + 0x14))
+
+#define EXTI_BASE	(PERIPH_BASE + 0x13C00)
+#define EXTI_IMR	((unsigned *)(EXTI_BASE + 0x0))
+#define EXTI_RTSR	((unsigned *)(EXTI_BASE + 0x8))
+#define EXTI_FTSR	((unsigned *)(EXTI_BASE + 0xC))
+#define EXTI_PR		((unsigned *)(EXTI_BASE + 0x14))
 
 #define GPIOA_BASE	(PERIPH_BASE + 0x20000)
 #define GPIOB_BASE	(PERIPH_BASE + 0x20400)
 #define GPIOC_BASE	(PERIPH_BASE + 0x20800)
 #define GPIOD_BASE	(PERIPH_BASE + 0x20C00)
+
+#define NVIC_BASE	0xE000E000
+#define NVIC_ISER1	((unsigned *)(NVIC_BASE + 0x100 + 0x4))
+#define NVIC_ICPR1	((unsigned *)(NVIC_BASE + 0x280 + 0x4))
 
 
 typedef struct {
@@ -73,6 +87,23 @@ static void delay(unsigned count)
 	while (count--);
 }
 
+
+static void init_irq(void)
+{
+	/* Enable clock for SYSCFGEN in (RCC_APB2ENR) reg */
+	do {
+		*RCC_APB2ENR |= (1 << 14);
+	} while (!(*RCC_APB2ENR & (1 << 14)));
+	/* Set PC13 as source for EXTI15_10 */
+	*SYSCFG_EXTICR4 = 1 << 5;
+	/* Configure EXTI15_10 */
+	/* Unmask line 13 of EXTI */
+	*EXTI_IMR = 1 << 13;
+	/* Select falling edge trigger (button press-down) */
+	*EXTI_FTSR = 1 << 13;
+	/* Enable EXTI10_15 (40) in NVIC_ISER1 register */
+	*NVIC_ISER1 |= (1 << 8);
+}
 
 
 static void init_gpios(void)
@@ -148,23 +179,24 @@ static void run_led_row(unsigned reverse, unsigned nleds, unsigned d)
 	}
 }
 
+static volatile unsigned reverse;
+void button_press_handler(void)
+{
+	/* Clear pending bit for line 13 of EXTI and IRQ40 */
+	*EXTI_PR |= (1 << 13);
+	*NVIC_ICPR1 |= (1 << 8);
+	reverse = ~reverse;
+}
+
 int main(void)
 {
-	unsigned reverse = 0;
 	unsigned d = 200000;
 	unsigned nleds = 3;
 
+	init_irq();
 	init_gpios();
 
 	while (1) {
-		/* TODO Replace with button interrupt */
-		if (!(GPIOC_Reg_Ptr->idr & (1 << 13))) {
-			reverse = !reverse;
-			/* To notify direction of ladder has changed */
-			GPIOA_Reg_Ptr->odr |= 0x20;
-			delay(2000000);
-			GPIOA_Reg_Ptr->odr &= ~0x20;
-		}
 		run_led_row(reverse, nleds, d);
 	}
 

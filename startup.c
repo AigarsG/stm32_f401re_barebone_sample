@@ -10,11 +10,67 @@ extern unsigned _BSS_END;
 #define STACK_TOP SRAM_BASE_ADDR + 0x5000
 void _start();
 extern int main();
+extern void button_press_handler(void);
 
 /* Define vector table */
 unsigned *stm32_f401re_vectors[] __attribute__ ((section("vectors"))) = {
 	(unsigned *)STACK_TOP, /* stack pointer */
-	(unsigned *)_start /* entry point */
+	(unsigned *)_start, /* entry point */
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0, /* WWDG_IRQHandler */
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	(unsigned *)button_press_handler
 };
 
 void _start()

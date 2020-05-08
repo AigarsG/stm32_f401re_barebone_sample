@@ -1,3 +1,5 @@
+ENTRY(_start)
+
 SECTIONS
 {
 	/* Set location pointer */

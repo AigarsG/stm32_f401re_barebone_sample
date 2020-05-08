@@ -8,16 +8,16 @@ extern unsigned _BSS_END;
 
 #define SRAM_BASE_ADDR 0x20000000
 #define STACK_TOP SRAM_BASE_ADDR + 0x5000
-void startup();
-int main();
+void _start();
+extern int main();
 
 /* Define vector table */
 unsigned *stm32_f401re_vectors[] __attribute__ ((section("vectors"))) = {
 	(unsigned *)STACK_TOP, /* stack pointer */
-	(unsigned *)startup /* entry point */
+	(unsigned *)_start /* entry point */
 };
 
-void startup()
+void _start()
 {
 	/* 
 	 * Copy data belonging to the '.data' section from its load time

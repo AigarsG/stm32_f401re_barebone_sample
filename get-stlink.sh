@@ -1,4 +1,4 @@
-apt-get install -y git cmake pkg-config libusb-1.0 libusb-1.0-0-dev udev
+#!/bin/bash
 
 git clone https://github.com/stlink-org/stlink.git /opt/stlink
 

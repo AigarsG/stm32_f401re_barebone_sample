@@ -5,20 +5,22 @@
 </ol>
 
 ## Building
-### Native build
+### Native
+#### Native build
 make
 
-### Native debug build
+#### Native debug build
 make DEBUG=1
 
-### Target build
+### Target (from inside Docker container)
+#### Taget build
 make ARCH=arm CROSS_COMPILE=arm-none-eabi-
 
-### Target debug build
+#### Target debug build
 make DEBUG=1 ARCH=arm CROSS_COMPILE=arm-none-eabi-
 
-## Programming device (from inside Docker container)
+#### Programming device
 ./flash.sh
 
-## Debugging with gdb
+#### Debugging with gdb
 ./debug.sh

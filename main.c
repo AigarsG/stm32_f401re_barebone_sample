@@ -74,6 +74,7 @@ static void delay(unsigned count)
 }
 
 
+
 static void init_gpios(void)
 {
 	/* Enable clock for GPIOA */
@@ -106,24 +107,43 @@ static void init_gpios(void)
 }
 
 
-static void run_gpio_ladder(unsigned reverse, unsigned d)
+static void run_led_row(unsigned reverse, unsigned nleds, unsigned d)
 {
 	int i;
+	int tail;
 	reg_pin_pair_t *e;
 
 	if (reverse) {
 		for (i = output_pins_sz - 1; i >= 0; i--) {
 			e = &output_pins[i];
 			e->reg->odr |= (1 << e->pin);
+			if (i + nleds < output_pins_sz) {
+				e = &output_pins[i+nleds];
+				e->reg->odr &= ~(1 << e->pin);
+			}
 			delay(d);
+		}
+		/* Turn off remaining LEDS */
+		for (i = nleds - 1; i >= 0; i--) {
+			e = &output_pins[i];
 			e->reg->odr &= ~(1 << e->pin);
+			delay(d);
 		}
 	} else {
 		for (i = 0; i < output_pins_sz; i++) {
 			e = &output_pins[i];
 			e->reg->odr |= (1 << e->pin);
+			if (i >= nleds) {
+				e = &output_pins[i-nleds];
+				e->reg->odr &= ~(1 << e->pin);
+			}
 			delay(d);
+		}
+		/* Turn off remaining LEDS */
+		for (i = i - nleds - 1; i < output_pins_sz; i++) {
+			e = &output_pins[i];
 			e->reg->odr &= ~(1 << e->pin);
+			delay(d);
 		}
 	}
 }
@@ -132,6 +152,7 @@ int main(void)
 {
 	unsigned reverse = 0;
 	unsigned d = 200000;
+	unsigned nleds = 3;
 
 	init_gpios();
 
@@ -144,7 +165,7 @@ int main(void)
 			delay(2000000);
 			GPIOA_Reg_Ptr->odr &= ~0x20;
 		}
-		run_gpio_ladder(reverse, d);
+		run_led_row(reverse, nleds, d);
 	}
 
 	return 0;

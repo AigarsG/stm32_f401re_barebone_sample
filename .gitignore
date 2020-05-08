@@ -4,6 +4,7 @@
 # Unignore
 !.gitignore
 !*.c
+!*.h
 !README.md
 !Makefile
 !Dockerfile

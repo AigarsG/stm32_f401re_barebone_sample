@@ -144,6 +144,9 @@ static void run_led_row(unsigned reverse, unsigned nleds, unsigned d)
 	int tail;
 	reg_pin_pair_t *e;
 
+	if (nleds > output_pins_sz)
+		nleds = output_pins_sz;
+
 	if (reverse) {
 		for (i = output_pins_sz - 1; i >= 0; i--) {
 			e = &output_pins[i];
@@ -171,7 +174,7 @@ static void run_led_row(unsigned reverse, unsigned nleds, unsigned d)
 			delay(d);
 		}
 		/* Turn off remaining LEDS */
-		for (i = i - nleds - 1; i < output_pins_sz; i++) {
+		for (i = i - nleds; i < output_pins_sz; i++) {
 			e = &output_pins[i];
 			e->reg->odr &= ~(1 << e->pin);
 			delay(d);
@@ -191,7 +194,7 @@ void button_press_handler(void)
 int main(void)
 {
 	unsigned d = 200000;
-	unsigned nleds = 3;
+	unsigned nleds = 5;
 
 	init_irq();
 	init_gpios();

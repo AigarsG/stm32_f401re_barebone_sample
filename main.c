@@ -218,6 +218,9 @@ static void run_led_row(unsigned reverse, unsigned nleds, unsigned d)
 		nleds = output_pins_sz;
 
 	if (reverse) {
+#ifdef DEBUG
+		write_usart("output led row, in reverse", strlen("output led row, in reverse") + 1);
+#endif
 		for (i = output_pins_sz - 1; i >= 0; i--) {
 			e = &output_pins[i];
 			e->reg->odr |= (1 << e->pin);
@@ -234,6 +237,9 @@ static void run_led_row(unsigned reverse, unsigned nleds, unsigned d)
 			delay(d);
 		}
 	} else {
+#ifdef DEBUG
+		write_usart("output led row", strlen("output led row") + 1);
+#endif
 		for (i = 0; i < output_pins_sz; i++) {
 			e = &output_pins[i];
 			e->reg->odr |= (1 << e->pin);

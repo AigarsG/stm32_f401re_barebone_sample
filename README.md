@@ -1,3 +1,8 @@
+## About
+Simple LED light row as barebone example implemented on STM32F401re microcontroller.
+Button press (PC13) changes direction of light row. Debug build outputs notification
+about direction LED light row direction on UART1_TX (PA9) pin at 115200 baud rate, 1 stop bit, 8-bit word
+
 ## Build environment
 <ol>
 <li>./docker-build.sh to build and image </li>

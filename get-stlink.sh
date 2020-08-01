@@ -3,7 +3,7 @@
 git clone https://github.com/stlink-org/stlink.git /opt/stlink
 
 cd /opt/stlink && make release \
-		&& cp /opt/stlink/etc/udev/rules.d/* /etc/udev/rules.d \
+		&& cp /opt/stlink/config/udev/rules.d/* /etc/udev/rules.d \
 		&& udevadm control --reload-rules \
 		&& udevadm trigger
 

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-st-flash write main.bin 0x08000000
+st-flash --reset write main.bin 0x08000000

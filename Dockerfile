@@ -10,7 +10,8 @@ RUN apt-get update && apt-get install -y	binutils-arm-none-eabi \
 						pkg-config \
 						libusb-1.0 \
 						libusb-1.0-0-dev \
-						udev
+						udev \
+						vim
 
 ADD get-stlink.sh /
 RUN /get-stlink.sh

@@ -2,7 +2,7 @@ RM = rm -rf
 GCC = $(CROSS_COMPILE)gcc 
 LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
-#CFLAGS = -pedantic-errors
+CFLAGS = -pedantic-errors -std=c89 -Wpedantic
 ifdef CROSS_COMPILE
 CFLAGS += -mcpu=cortex-m4
 CFLAGS += -mthumb

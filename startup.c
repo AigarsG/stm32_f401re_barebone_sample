@@ -17,9 +17,9 @@ extern int main();
 extern void button_press_handler(void);
 
 /* Define vector table */
-unsigned *stm32_f401re_vectors[] __attribute__ ((section("vectors"))) = {
-	(unsigned *)STACK_TOP, /* stack pointer */
-	(unsigned *)_start, /* entry point */
+void (*stm32_f401re_vectors[])() __attribute__ ((section("vectors"))) = {
+	(void (*)(void))STACK_TOP, /* stack pointer */
+	(void (*)(void))_start, /* entry point */
 	0,
 	0,
 	0,
@@ -74,7 +74,7 @@ unsigned *stm32_f401re_vectors[] __attribute__ ((section("vectors"))) = {
 	0,
 	0,
 	0,
-	(unsigned *)button_press_handler
+	(void (*)(void))button_press_handler
 };
 
 

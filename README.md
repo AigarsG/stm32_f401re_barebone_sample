@@ -19,10 +19,10 @@ make DEBUG=1
 
 ### Target (from inside Docker container)
 #### Taget build
-make ARCH=arm CROSS_COMPILE=arm-none-eabi-
+make CROSS_COMPILE=arm-none-eabi-
 
 #### Target debug build
-make DEBUG=1 ARCH=arm CROSS_COMPILE=arm-none-eabi-
+make DEBUG=1 CROSS_COMPILE=arm-none-eabi-
 
 #### Programming device
 ./flash.sh

@@ -111,4 +111,6 @@ void _start()
 
 	/* Call the 'main()' function */
 	main();
+
+	while (1);
 }

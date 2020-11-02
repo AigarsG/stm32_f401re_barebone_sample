@@ -1,7 +1,7 @@
 MEMORY
 {
 	FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 512K
-	SRAM (xrx) : ORIGIN = 0x20000000, LENGTH = 96K
+	SRAM (wrx) : ORIGIN = 0x20000000, LENGTH = 96K
 }
 
 ENTRY(_start)
@@ -40,7 +40,7 @@ SECTIONS
         /* Uninitialized data section */
         .bss : ALIGN(4)
 	{
-                /* This is used by he startup in order to initialize the .bss section */
+                /* This is used by the startup in order to initialize the .bss section */
                 _sbss = .;
                 *(.bss .bss*)
                 *(COMMON)

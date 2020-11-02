@@ -1,11 +1,12 @@
-RM = rm -rf
-GCC = $(CROSS_COMPILE)gcc 
+CC = $(CROSS_COMPILE)gcc
 LD = $(CROSS_COMPILE)ld
 OBJCOPY = $(CROSS_COMPILE)objcopy
 CFLAGS = -pedantic-errors -std=c89 -Wpedantic
+LDFLAGS = -Tstm32_f401re.ld
 ifdef CROSS_COMPILE
-CFLAGS += -mcpu=cortex-m4
-CFLAGS += -mthumb
+CFLAGS += -mcpu=cortex-m4 -mthumb
+LDFLAGS += --specs=nosys.specs
+LDFLAGS += -nostartfiles
 endif
 
 # Debug version
@@ -19,16 +20,17 @@ ELF=$(TARGET:.bin=.elf)
 SRC=$(wildcard *.c)
 OBJ=$(SRC:.c=.o)
 
-all: $(TARGET)
 
-$(TARGET): $(ELF)
-	$(OBJCOPY) -O binary $^ $@
+all: $(TARGET) $(ELF)
+
+$(TARGET): $(OBJ)
+	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 $(ELF): $(OBJ)
-	$(LD) -Tstm32_f401re.ld $^ -o $@
+	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 %.o: %.c
-	$(GCC) $(CFLAGS) -c $^ -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
 clean:

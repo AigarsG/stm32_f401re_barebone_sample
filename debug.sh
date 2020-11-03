@@ -1,4 +1,4 @@
 #!/bin/bash
 
 st-util &
-gdb-multiarch -tui --eval-command="target remote localhost:4242" main.elf
+gdb-multiarch -tui --eval-command="target extended-remote localhost:4242" main.elf
